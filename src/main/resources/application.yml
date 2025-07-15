@@ -1,0 +1,127 @@
+debug: true
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: reactive-gateway
+  
+  webflux:
+    base-path: /
+  
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# gRPC client configuration
+grpc:
+  client:
+    user-service:
+      host: localhost
+      port: 9090
+
+# Logging configuration
+logging:
+  level:
+    com.example: DEBUG
+    io.grpc: INFO
+    reactor.netty: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Rate Limiting Configuration
+rate-limit:
+  enabled: true
+  strategy: TOKEN_BUCKET
+  use-redis: false  # Enable distributed rate limiting with Redis
+  key-prefix: "rate_limit:"
+  
+  # Default rate limits (fallback)
+  capacity: 100
+  refill-tokens: 100
+  refill-period: PT1M  # 1 minute
+  
+  # Per-endpoint rate limits
+  get-user-by-id:
+    capacity: 60
+    refill-tokens: 60
+    refill-period: PT1M
+  
+  create-user:
+    capacity: 10
+    refill-tokens: 10
+    refill-period: PT1M
+  
+  update-user:
+    capacity: 20
+    refill-tokens: 20
+    refill-period: PT1M
+  
+  delete-user:
+    capacity: 5
+    refill-tokens: 5
+    refill-period: PT1M
+  
+  list-users:
+    capacity: 30
+    refill-tokens: 30
+    refill-period: PT1M
+
+# Redis Configuration (for distributed rate limiting)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 2000ms
+      connect-timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+        shutdown-timeout: 100ms
+      ssl: ${REDIS_SSL:false}
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,httptrace,loggers
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 10s
+        descriptions: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        grpc.client.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+        grpc.client.requests: 0.5, 0.95, 0.99
+    tags:
+      application: reactive-gateway
+      environment: ${ENVIRONMENT:development}
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}

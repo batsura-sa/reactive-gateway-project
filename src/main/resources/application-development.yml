@@ -1,0 +1,41 @@
+# Development configuration with relaxed rate limiting
+# Use with: --spring.profiles.active=development
+
+rate-limit:
+  enabled: true
+  use-redis: false  # Use in-memory for development
+  key-prefix: "dev_rate_limit:"
+  
+  # Relaxed rate limits for development
+  get-user-by-id:
+    capacity: 1000
+    refill-tokens: 1000
+    refill-period: PT1M
+  
+  create-user:
+    capacity: 100
+    refill-tokens: 100
+    refill-period: PT1M
+  
+  update-user:
+    capacity: 100
+    refill-tokens: 100
+    refill-period: PT1M
+  
+  delete-user:
+    capacity: 50
+    refill-tokens: 50
+    refill-period: PT1M
+  
+  list-users:
+    capacity: 200
+    refill-tokens: 200
+    refill-period: PT1M
+
+# Development logging
+logging:
+  level:
+    com.example: DEBUG
+    com.example.ratelimit: DEBUG
+    io.lettuce: DEBUG
+    redis: DEBUG

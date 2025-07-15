@@ -1,0 +1,65 @@
+# Redis-specific configuration profile
+# Use this profile when you want to enable Redis-based rate limiting
+# Run with: --spring.profiles.active=redis
+
+rate-limit:
+  enabled: true
+  use-redis: true
+  key-prefix: "rate_limit:"
+  
+  # More aggressive rate limits for production
+  get-user-by-id:
+    capacity: 100
+    refill-tokens: 100
+    refill-period: PT1M
+  
+  create-user:
+    capacity: 20
+    refill-tokens: 20
+    refill-period: PT1M
+  
+  update-user:
+    capacity: 30
+    refill-tokens: 30
+    refill-period: PT1M
+  
+  delete-user:
+    capacity: 10
+    refill-tokens: 10
+    refill-period: PT1M
+  
+  list-users:
+    capacity: 50
+    refill-tokens: 50
+    refill-period: PT1M
+
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 2000ms
+      connect-timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+          max-wait: -1ms
+        shutdown-timeout: 100ms
+      ssl: ${REDIS_SSL:false}
+
+# Enhanced monitoring for Redis-based rate limiting
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,httptrace,loggers,redis
+  endpoint:
+    redis:
+      enabled: true
+  health:
+    redis:
+      enabled: true

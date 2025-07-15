@@ -1,0 +1,75 @@
+# Production configuration with Redis rate limiting
+# Use with: --spring.profiles.active=production
+
+rate-limit:
+  enabled: true
+  use-redis: true
+  key-prefix: "prod_rate_limit:"
+  
+  # Production-grade rate limits
+  get-user-by-id:
+    capacity: 1000
+    refill-tokens: 1000
+    refill-period: PT1M
+  
+  create-user:
+    capacity: 100
+    refill-tokens: 100
+    refill-period: PT1M
+  
+  update-user:
+    capacity: 200
+    refill-tokens: 200
+    refill-period: PT1M
+  
+  delete-user:
+    capacity: 50
+    refill-tokens: 50
+    refill-period: PT1M
+  
+  list-users:
+    capacity: 500
+    refill-tokens: 500
+    refill-period: PT1M
+
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:redis-cluster.production.com}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      database: ${REDIS_DATABASE:1}
+      timeout: 5000ms
+      connect-timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 32
+          max-idle: 16
+          min-idle: 4
+          max-wait: 2000ms
+        shutdown-timeout: 200ms
+      ssl: ${REDIS_SSL:true}
+
+# Production logging
+logging:
+  level:
+    com.example.ratelimit: INFO
+    io.lettuce: WARN
+    redis: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Production monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 30s

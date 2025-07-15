@@ -1,0 +1,27 @@
+server:
+  port: 0  # Random port for tests
+
+spring:
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+# Disable rate limiting for tests
+rate-limit:
+  enabled: false
+  use-redis: false
+
+# gRPC client configuration for tests
+grpc:
+  client:
+    user-service:
+      host: localhost
+      port: 9091  # Different port for tests
+
+# Logging configuration for tests
+logging:
+  level:
+    com.example: DEBUG
+    io.grpc: WARN
+    reactor.netty: WARN
+    org.springframework: WARN
